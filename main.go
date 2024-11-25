@@ -8,17 +8,30 @@ import (
 
 func main() {
 	// Définir les options
+	ptcl := flag.String("type","tcp","the protocol to use ")
 	host := flag.String("host", "127.0.0.1", "The target host to scan")
 	ports := flag.String("ports", "0-1000", "list of ports to scan ex : 80,443 or 0-100")
 	timeout := flag.Int("timeout", 5, "Timeout in seconds for the connection")
 
-	port_range, err := parsePorts(*ports)
 
-	if err != nil {
+
+	port_range, err := parsePorts(*ports)
+	checkAddr = checkIP(host)
+	checkPtcl = checkProtocole(ptcl) 
+
+	if !checkAddr{
+		fmt.Println("Error with the host address")
+	}
+	else if !checkPtcl{
+		fmt.Println("Error with the protocol")
+	}
+	else if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
+	else {
+		result := scanner("tcp", *host, port_range, *timeout)
+	}
 
-	result := scanner("tcp", *host, port_range, *timeout)
 
 }
