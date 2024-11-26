@@ -32,7 +32,7 @@ func main() {
 		return
 	}
 
-	result := scanner("tcp", *host, port_range, *timeout)
+	result := whosup("tcp", *host, port_range, *timeout)
 	toString(result)
 	
 

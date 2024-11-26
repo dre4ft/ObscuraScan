@@ -14,21 +14,20 @@ func whosup( address string, portRange []int, timeout int ) map[string]bool {
     duration := time.Duration(timeout) * time.Second
 
     for _, port := range portRange {       
-        toReturn[protocol_port] = scan("tcp",address,port)
+        toReturn[protocol_port] = scan("tcp",address,port,duration)
     }
     return toReturn
 }
 
 func scan(protocol string,ip string,port int , timeout int)bool{
-	ip_port := fmt.Sprintf("%s:%d", address, port)
-        protocol_port := fmt.Sprintf("%s,%d", protocol, port)
-        conn, err := net.DialTimeout(protocol, ip_port, duration)
-        if err != nil {
-			conn.Close()
-            return false
-        }
+	ip_port := fmt.Sprintf("%s:%d", ip, port)
+    conn, err := net.DialTimeout(protocol, ip_port, duration)
+	if err != nil {
 		conn.Close()
-		return true 
+		return false
+	}
+	conn.Close()
+	return true 
 }
 
 
