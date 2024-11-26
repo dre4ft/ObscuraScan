@@ -13,8 +13,12 @@ func whosup( address string, portRange []int, timeout int ) map[string]bool {
     toReturn := make(map[string]bool)
     duration := time.Duration(timeout) * time.Second
     for _, port := range portRange {   
-		protocol_port := fmt.Sprintf("tcp,%d",port)    
-        toReturn[protocol_port] = scan("tcp",address,port,duration)
+		protocol_port := fmt.Sprintf("tcp,%d",port) 
+		is_up =   scan("tcp",address,port,duration)
+		if is_up{
+			toReturn[protocol_port] = is_up
+		} 
+       
     }
     return toReturn
 }
@@ -30,6 +34,17 @@ func scan(protocol string,ip string,port int , timeout time.Duration)bool{
 
 }
 
+
+
+/*// Lire la bannière
+	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	reader := bufio.NewReader(conn)
+	banner, err := reader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("Erreur de lecture : %v", err)
+	}
+
+	return banner*/
 
 
 
