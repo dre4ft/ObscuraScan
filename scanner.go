@@ -34,15 +34,13 @@ func scanner(protocol string, address string, portRange []int, timeout int) map[
 
     return toReturn
 }
-func toString(input map[string]bool){
-	for key,value in range input{
-		if value{
-			fmt.Println("‰s : open",value)
+func toString(input map[string]bool) {
+	for key, value := range input { 
+		if value {
+			fmt.Printf("%s : open\n", key) 
+		} else {
+			fmt.Printf("%s : closed\n", key) 
 		}
-		else {
-			fmt.Println("‰s : open",value)
-		}
-		
 	}
 }
 
