@@ -3,7 +3,6 @@ package main
 // 2. Importation des packages nécessaires
 import (
 	"net"
-	"fmt"
 )
 
 
