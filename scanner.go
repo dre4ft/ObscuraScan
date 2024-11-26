@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+
 // Vérifie quels ports sont ouverts.
 func whosup(ip string, portRange []int, timeout int) map[int]bool {
 	toReturn := make(map[int]bool)
