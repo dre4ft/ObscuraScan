@@ -32,8 +32,9 @@ func main() {
 		return
 	}
 
-	result := whosup(*host, port_range, *timeout)
-	toString(result)
+	//result := whosup(*host, port_range, *timeout)
+	//toString(result)
+	scanAndGrab(*host, port_range, *timeout)
 	
 
 
