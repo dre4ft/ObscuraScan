@@ -16,14 +16,14 @@ func main() {
 
 
 	port_range, err := parsePorts(*ports)
-	checkAddr = checkIP(*host)
-	checkPtcl = checkProtocole(*ptcl) 
+	//checkAddr = checkIP(*host)
+	//checkPtcl = checkProtocole(*ptcl) 
 
-	if !checkAddr{
+	if !checkIP(*host){
 		fmt.Println("Error with the host address")
 		return
 	}
-	if !checkPtcl{
+	if !checkProtocole(*ptcl) {
 		fmt.Println("Error with the protocol")
 		return 
 	}
@@ -33,6 +33,7 @@ func main() {
 	}
 
 	result := scanner("tcp", *host, port_range, *timeout)
+	fmt.Println(result)
 	
 
 
