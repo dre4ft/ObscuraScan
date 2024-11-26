@@ -19,7 +19,7 @@ func whosup( address string, portRange []int, timeout int ) map[string]bool {
     return toReturn
 }
 
-func scan(protocol string,ip string,port int , timeout int)bool{
+func scan(protocol string,ip string,port int , timeout time.Duration)bool{
 	ip_port := fmt.Sprintf("%s:%d", ip, port)
     conn, err := net.DialTimeout(protocol, ip_port, duration)
 	if err != nil {
