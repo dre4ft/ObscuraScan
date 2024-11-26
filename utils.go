@@ -16,11 +16,7 @@ func checkProtocole(providedProtocol string)bool{
 	return providedProtocol == "tcp" || providedProtocol == "udp"
 }
 
-func reverselookup(url string) string{
+func reverselookup(url string) (string, error) {
 	ips, err := net.LookupHost(url)
-	if err != nil {
-		fmt.Println("Erreur:", err)
-		return
-	}
-	return ips[0]
+	return ips[0],err
 }
