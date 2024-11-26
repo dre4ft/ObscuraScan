@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net"
 	"regexp"
-	"time"
 )
 
 func main() {
@@ -22,7 +20,7 @@ func main() {
 		finalHost = *host
 	} else {
 		if matched, _ := regexp.MatchString(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`, *host); matched {
-			ip, err := reverseLookup(*host)
+			ip, err := reverselookup(*host)
 			if err != nil {
 				fmt.Printf("Erreur de reverse lookup pour l'URL %s : %v\n", *host, err)
 				return
