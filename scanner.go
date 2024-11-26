@@ -70,9 +70,14 @@ func bannerGrab(portUp map[int]bool, ip string, timeout time.Duration) map[int]s
 // Combine les fonctions pour scanner et récupérer les bannières.
 func scanAndGrab(ip string, portRange []int, timeout int) {
 	openPorts := removeDown(whosup(ip, portRange, timeout))
-	banners := bannerGrab(openPorts, ip, time.Duration(timeout)*time.Second)
-	for port, banner := range banners {
-		fmt.Printf("tcp:%d : open\n%s\n\n", port, banner)
+	if len(openPorts)>0{
+		banners := bannerGrab(openPorts, ip, time.Duration(timeout)*time.Second)
+		for port, banner := range banners {
+			fmt.Printf("tcp:%d : open\n%s\n\n", port, banner)
+		}
+	}
+	else{
+		fmt.Printf("no open port")
 	}
 }
 
