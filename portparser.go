@@ -18,7 +18,7 @@ func parsePorts(input string) ([]int, error) {
 
         start, err1 := strconv.Atoi(parts[0])
         end, err2 := strconv.Atoi(parts[1])
-        if err1 != nil || err2 != nil || start > end {
+        if err1 != nil || err2 != nil || start > end || end > 65535 {
             return nil, errors.New("invalid range values")
         }
 
