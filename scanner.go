@@ -23,11 +23,11 @@ func scan(protocol string,ip string,port int , timeout time.Duration)bool{
 	ip_port := fmt.Sprintf("%s:%d", ip, port)
     conn, err := net.DialTimeout(protocol, ip_port, timeout)
 	if err != nil {
-		conn.Close()
 		return false
 	}
-	conn.Close()
+	defer conn.Close()
 	return true 
+
 }
 
 
