@@ -75,8 +75,7 @@ func scanAndGrab(ip string, portRange []int, timeout int) {
 		for port, banner := range banners {
 			fmt.Printf("tcp:%d : open\n%s\n\n", port, banner)
 		}
-	}
-	else{
+	} else{
 		fmt.Printf("no open port")
 	}
 }
