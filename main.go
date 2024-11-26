@@ -1,6 +1,5 @@
 package main
 
-// 2. Importation des packages nécessaires
 import (
 	"flag"
 	"fmt"
@@ -12,12 +11,13 @@ func main() {
 	host := flag.String("host", "127.0.0.1", "The target host to scan")
 	ports := flag.String("ports", "0-1000", "list of ports to scan ex : 80,443 or 0-100")
 	timeout := flag.Int("timeout", 5, "Timeout in seconds for the connection")
+	flag.Parse()
 
 
 
 	port_range, err := parsePorts(*ports)
-	checkAddr = checkIP(host)
-	checkPtcl = checkProtocole(ptcl) 
+	checkAddr = checkIP(*host)
+	checkPtcl = checkProtocole(*ptcl) 
 
 	if !checkAddr{
 		fmt.Println("Error with the host address")

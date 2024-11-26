@@ -8,7 +8,7 @@ import (
 
 
 func checkIP(providedIp string)bool{
-	parsedIP := net.ParseIP(ip)
+	parsedIP := net.ParseIP(providedIp)
 	return parsedIP != nil
 }
 
