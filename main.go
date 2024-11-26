@@ -21,17 +21,19 @@ func main() {
 
 	if !checkAddr{
 		fmt.Println("Error with the host address")
+		return
 	}
-	else if !checkPtcl{
+	if !checkPtcl{
 		fmt.Println("Error with the protocol")
+		return 
 	}
-	else if err != nil {
+	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-	else {
-		result := scanner("tcp", *host, port_range, *timeout)
-	}
+
+	result := scanner("tcp", *host, port_range, *timeout)
+	
 
 
 }
