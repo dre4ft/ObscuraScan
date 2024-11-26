@@ -14,7 +14,7 @@ func whosup( address string, portRange []int, timeout int ) map[string]bool {
     duration := time.Duration(timeout) * time.Second
     for _, port := range portRange {   
 		protocol_port := fmt.Sprintf("tcp,%d",port) 
-		is_up =   scan("tcp",address,port,duration)
+		is_up :=   scan("tcp",address,port,duration)
 		if is_up{
 			toReturn[protocol_port] = is_up
 		} 
