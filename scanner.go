@@ -23,10 +23,8 @@ func scanner(protocol string , address string, portRange []int, timeout int ) ma
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
 				fmt.Println("Timeout occurred")
-			} else {
-				fmt.Println("Error:", err)
 			}
-			
+	
 			toReturn[protocol_port] = false 
 		}
 		defer conn.Close()
