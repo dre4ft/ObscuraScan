@@ -40,36 +40,56 @@ func removeDown(input map[int]bool) map[int]bool {
 	return result
 }
 
-// Effectue le banner grabbing sur les ports ouverts.
 func bannerGrab(portUp map[int]bool, ip string, timeout time.Duration) map[int]string {
 	portBanner := make(map[int]string)
 
+	// Boucle sur chaque port ouvert
 	for port := range portUp {
-		if port == 80 {
-			portBanner[port] = handle_HTTP()
-			continue
-		}
 		address := fmt.Sprintf("%s:%d", ip, port)
 		conn, err := net.DialTimeout("tcp", address, timeout)
 		if err != nil {
+			// Si la connexion échoue, on l'ignore et on passe au port suivant
 			fmt.Printf("Erreur de connexion au port %d : %v\n", port, err)
 			continue
 		}
 
+		// Assurez-vous de fermer la connexion à la fin de la fonction
 		defer conn.Close()
 
-		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-		reader := bufio.NewReader(conn)
-		banner, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Printf("Erreur de lecture sur le port %d : %v\n", port, err)
-			continue
+		// Pour le port 80 (HTTP), envoyer une requête GET
+		if port == 80 {
+			fmt.Fprintf(conn, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", ip)
 		}
 
-		portBanner[port] = banner
+		// Définir un délai de lecture (5 secondes)
+		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+
+		// Utiliser un buffer pour lire la réponse
+		reader := bufio.NewReader(conn)
+		var banner string
+		// Lire plusieurs lignes si nécessaire (jusqu'à un maximum ou une nouvelle ligne)
+		for {
+			line, err := reader.ReadString('\n')
+			banner += line
+			if err != nil {
+				// Si on rencontre une erreur ou que la fin de la réponse est atteinte
+				break
+			}
+		}
+
+		// Enregistrer le banner pour le port
+		if banner != "" {
+			portBanner[port] = banner
+		} else {
+			// Si aucun banner n'est récupéré, mentionner que le port est ouvert mais sans réponse
+			portBanner[port] = "Pas de banner trouvé"
+		}
 	}
+
+	// Retourner les bannières récupérées pour chaque port
 	return portBanner
 }
+
 
 // Combine les fonctions pour scanner et récupérer les bannières.
 func scanAndGrab(ip string, portRange []int, timeout int) {
@@ -100,17 +120,4 @@ func scanIPRange(ips []string , ports []int , timeout int){
 		fmt.Printf("%s : \n", ip)
 		scanAndGrab(ip,ports,timeout)
 	}
-}
-
-func handle_HTTP(ip string)string{
-
-	fmt.Fprintf(conn, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", ip)
-	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		return scanner.Text()
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Printf("Erreur lors de la lecture : %v\n", err)
-	}
-	
 }
