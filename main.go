@@ -17,10 +17,10 @@ func main() {
 
 	var singleHost string
 	var multiHost []string 
-	is_singleHost := false 
+	var is_singleHost bool := false 
 
 	if checkIP(*host) {
-		finalHost = *host
+		singleHost = *host
 		is_singleHost := true
 	} else {
 		if matched, _ := regexp.MatchString(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`, *host); matched {
