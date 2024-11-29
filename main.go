@@ -15,9 +15,13 @@ func main() {
 
 	portRange, err := parsePorts(*ports)
 
-	var finalHost string
+	var singleHost string
+	var multiHost []string 
+	is_singleHost := false 
+
 	if checkIP(*host) {
 		finalHost = *host
+		is_singleHost := true
 	} else {
 		if matched, _ := regexp.MatchString(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`, *host); matched {
 			ip ,err:= reverselookup(*host)
@@ -25,7 +29,7 @@ func main() {
 				fmt.Printf("Erreur de reverse lookup pour l'URL %s : %v\n", *host, err)
 				return
 			}
-			finalHost = ip
+			multiHost = ip
 		} else {
 			fmt.Println("Erreur : L'adresse ou l'URL fournie n'est pas valide.")
 			return
@@ -41,5 +45,12 @@ func main() {
 		return
 	}
 
-	scanAndGrab(finalHost, portRange, *timeout)
+	if is_singleHost{
+		scanAndGrab(finalHost, portRange, *timeout)
+	}
+	else {
+		scanIPRange(multiHost, portRange,*timeout)
+	}
+
+	
 }
