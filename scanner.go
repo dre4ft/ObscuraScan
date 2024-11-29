@@ -72,10 +72,7 @@ func bannerGrab(portUp map[int]bool, ip string, timeout time.Duration) map[int]s
 			line, err := reader.ReadString('\n')
 			banner += line
 			if err != nil {
-				if err.Error() != "EOF" {
-					fmt.Printf("Erreur de lecture sur le port %d : %v\n", port, err)
-				}
-				break
+				banner = ""
 			}
 		}
 
