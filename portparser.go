@@ -9,6 +9,8 @@ import (
 )
    
 func parsePorts(input string) ([]int, error) {
+    input = strings.TrimSpace(input) // Supprimer les espaces autour de l'entrée
+
     // Vérifier si c'est un range (ex: "0-100")
     if strings.Contains(input, "-") {
         parts := strings.Split(input, "-")
@@ -30,16 +32,26 @@ func parsePorts(input string) ([]int, error) {
         return ports, nil
     }
 
-    // Sinon, traiter comme une liste (ex: "23,24,80")
-    parts := strings.Split(input, ",")
-    ports := make([]int, 0, len(parts))
-    for _, part := range parts {
-        port, err := strconv.Atoi(strings.TrimSpace(part))
-        if err != nil || port < 0 || port > 65535 {
-            return nil, fmt.Errorf("invalid port: %s", part)
+    // Vérifier si c'est une liste (ex: "23,24,80")
+    if strings.Contains(input, ",") {
+        parts := strings.Split(input, ",")
+        ports := make([]int, 0, len(parts))
+        for _, part := range parts {
+            port, err := strconv.Atoi(strings.TrimSpace(part))
+            if err != nil || port < 0 || port > 65535 {
+                return nil, fmt.Errorf("invalid port: %s", part)
+            }
+            ports = append(ports, port)
         }
-        ports = append(ports, port)
+        return ports, nil
     }
 
-    return ports, nil
+    // Traiter comme un seul port (ex: "80")
+    port, err := strconv.Atoi(input)
+    if err != nil || port < 0 || port > 65535 {
+        return nil, fmt.Errorf("invalid port: %s", input)
+    }
+
+    return []int{port}, nil
 }
+
