@@ -17,7 +17,7 @@ func main() {
 
 	var singleHost string
 	var multiHost []string 
-	var is_singleHost bool := false 
+	var is_singleHost bool = false 
 
 	if checkIP(*host) {
 		singleHost = *host
