@@ -73,7 +73,7 @@ func bannerGrab(portUp map[int]bool, ip string, timeout time.Duration) map[int]s
 			banner += line
 			if err != nil {
 				if err.Error() != "EOF" {
-					banner := ""
+					banner = ""
 				}
 				break
 			}
