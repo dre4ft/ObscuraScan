@@ -62,7 +62,7 @@ func bannerGrab(portUp map[int]bool, ip string, timeout time.Duration) map[int]s
 		}
 
 		// Définir un délai de lecture (5 secondes)
-		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(timeout))
 
 		// Utiliser un buffer pour lire la réponse
 		reader := bufio.NewReader(conn)
