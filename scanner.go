@@ -103,14 +103,14 @@ func scanIPRange(ips []string , ports []int , timeout int){
 }
 
 func handle_HTTP(ip string)string{
-	if port == 80 {
-		fmt.Fprintf(conn, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", ip)
-		scanner := bufio.NewScanner(conn)
-		for scanner.Scan() {
-			return scanner.Text()
-		}
-		if err := scanner.Err(); err != nil {
-			fmt.Printf("Erreur lors de la lecture : %v\n", err)
-		}
+
+	fmt.Fprintf(conn, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", ip)
+	scanner := bufio.NewScanner(conn)
+	for scanner.Scan() {
+		return scanner.Text()
 	}
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("Erreur lors de la lecture : %v\n", err)
+	}
+	
 }
