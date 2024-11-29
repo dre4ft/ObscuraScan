@@ -45,6 +45,10 @@ func bannerGrab(portUp map[int]bool, ip string, timeout time.Duration) map[int]s
 	portBanner := make(map[int]string)
 
 	for port := range portUp {
+		if port == 80 {
+			portBanner[port] = handle_HTTP()
+			continue
+		}
 		address := fmt.Sprintf("%s:%d", ip, port)
 		conn, err := net.DialTimeout("tcp", address, timeout)
 		if err != nil {
@@ -95,5 +99,18 @@ func scanIPRange(ips []string , ports []int , timeout int){
 	for _,ip := range ips {
 		fmt.Printf("%s : \n", ip)
 		scanAndGrab(ip,ports,timeout)
+	}
+}
+
+func handle_HTTP(ip string)string{
+	if port == 80 {
+		fmt.Fprintf(conn, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", ip)
+		scanner := bufio.NewScanner(conn)
+		for scanner.Scan() {
+			return scanner.Text()
+		}
+		if err := scanner.Err(); err != nil {
+			fmt.Printf("Erreur lors de la lecture : %v\n", err)
+		}
 	}
 }
