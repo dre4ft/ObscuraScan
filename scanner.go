@@ -93,7 +93,7 @@ func toString(input map[int]bool) {
 
 func scanIPRange(ips []string , ports []int , timeout int){
 	for _,ip := range ips {
-		fmt.Println("%s : \n", ip)
+		fmt.Printf("%s : \n", ip)
 		scanAndGrab(ip,ports,timeout)
 	}
 }
