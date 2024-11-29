@@ -21,7 +21,7 @@ func main() {
 
 	if checkIP(*host) {
 		singleHost = *host
-		is_singleHost := true
+		is_singleHost = true
 	} else {
 		if matched, _ := regexp.MatchString(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`, *host); matched {
 			ip ,err:= reverselookup(*host)
