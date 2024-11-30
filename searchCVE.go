@@ -105,12 +105,16 @@ func IsExploitable(cve CVE) string {
 func FormatCVEResults(application, version string, cves []CVE) string {
 	// Commencer à formater la chaîne avec le nom du protocole et de la version
 	result := fmt.Sprintf("%s/%s :\n", application, version)
-
-	// Ajouter chaque CVE à la chaîne avec son état d'exploitabilité
-	for _, cve := range cves {
-		exploitability := IsExploitable(cve)
-		result += fmt.Sprintf("- CVE %s exploitable: %s\n", cve.CVEID, exploitability)
+	if len(cves) > 0 {
+		// Ajouter chaque CVE à la chaîne avec son état d'exploitabilité
+		for _, cve := range cves {
+			exploitability := IsExploitable(cve)
+			result += fmt.Sprintf("- CVE %s exploitable: %s\n", cve.CVEID, exploitability)
+		}
+	}else {
+		result += ("no CVE founded")
 	}
+	
 
 	return result
 }
