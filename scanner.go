@@ -100,7 +100,7 @@ func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]str
         }
         mu.Unlock()
     }
-    
+    toString(result)
     return results
 }
 
