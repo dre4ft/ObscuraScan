@@ -9,92 +9,86 @@ import (
 )
 
 
-/*func scan (ip string,ports []int, timeout int , grab bool) map[string]string {
-	
-	toReturn := make(map[string]string)
-
-	for _, port := range ports {
-		isUp := false
-		address := fmt.Sprintf("%s:%d", ip, port)
-
-		conn, err := net.DialTimeout("tcp", address, time.Duration(timeout) * time.Second)
-		if err != nil {
-			continue // Si la connexion échoue, passer au port suivant
-		} else {
-			isUp = true
-		}
-
-		// Assurez-vous de fermer la connexion après l'utilisation
-		defer conn.Close()
-
-		protPort := fmt.Sprintf("tcp, %d", port)
-		if grab && isUp {
-			// Pour le port 80 (HTTP), envoyer une requête GET
-			if port == 80 {
-				fmt.Fprintf(conn, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", ip)
-			}
-
-			// Définir un délai de lecture
-			conn.SetReadDeadline(time.Now().Add(30 * time.Second))
-
-			// Utiliser un buffer pour lire la réponse
-			var banner string
-			buf := make([]byte, 1024)
-			for {
-				n, err := conn.Read(buf)
-				if n > 0 {
-					banner += string(buf[:n])
-				}
-				if err != nil {
-					if err == io.EOF {
-						break
-					}
-					banner = ""
-					break
-				}
-			}
-
-			if banner != "" {
-				toReturn[protPort] = fmt.Sprintf("open\n%s", banner)
-			} else {
-				toReturn[protPort] = "open\nPas de banner trouvé"
-			}
-		} else if isUp {
-			toReturn[protPort] = "open"
-		}
-	}
-
-	toString(toReturn)
-	return toReturn
-}*/
 
 func grabBanner(conn net.Conn, port int) string {
     // Utilisez la nouvelle fonction advancedBannerGrab
     return advancedBannerGrab(conn, port)
 }
 
-func scan(ip string, ports []int, timeout int, grab bool) map[string]string {
-    toReturn := make(map[string]string)
-    
-    for _, port := range ports {
-        address := fmt.Sprintf("%s:%d", ip, port)
-        conn, err := net.DialTimeout("tcp", address, time.Duration(timeout)*time.Second)
-        if err != nil {
-            continue // Port fermé ou non accessible
-        }
-        defer conn.Close()
+// Structure pour stocker les résultats du scan
+type ScanResult struct {
+    Port    int
+    State   string
+    Banner  string
+}
 
-        protPort := fmt.Sprintf("%d/tcp", port)
+func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]string {
+    // Canal pour stocker les résultats
+    results := make(map[string]string)
+    
+    // Canal pour synchroniser les résultats
+    resultsChan := make(chan ScanResult, len(ports))
+    
+    // WaitGroup pour attendre la fin de tous les scans
+    var wg sync.WaitGroup
+    
+    // Limiter le nombre de goroutines simultanées
+    semaphore := make(chan struct{}, 100) // Limite à 100 connexions simultanées
+    
+    // Scanner chaque port en parallèle
+    for _, port := range ports {
+        wg.Add(1)
+        semaphore <- struct{}{} // Acquérir un slot
         
-        if grab {
-            banner := grabBanner(conn, port)
-            toReturn[protPort] = fmt.Sprintf("open\n%s", banner)
+        go func(port int) {
+            defer wg.Done()
+            defer func() { <-semaphore }() // Libérer le slot
+            
+            address := fmt.Sprintf("%s:%d", ip, port)
+            conn, err := net.DialTimeout("tcp", address, time.Duration(timeout)*time.Second)
+            if err != nil {
+                return // Port fermé ou non accessible
+            }
+            defer conn.Close()
+
+            result := ScanResult{
+                Port:   port,
+                State:  "open",
+                Banner: "",
+            }
+            
+            // Si grab est activé, tenter de récupérer la bannière
+            if grab {
+                result.Banner = grabBanner(conn, port)
+            }
+            
+            // Envoyer le résultat au canal
+            resultsChan <- result
+        }(port)
+    }
+    
+    // Goroutine pour fermer le canal une fois tous les scans terminés
+    go func() {
+        wg.Wait()
+        close(resultsChan)
+    }()
+    
+    // Collecter les résultats
+    for result := range resultsChan {
+        protPort := fmt.Sprintf("%d/tcp", result.Port)
+        if result.Banner != "" {
+            results[protPort] = fmt.Sprintf("open\n%s", result.Banner)
         } else {
-            toReturn[protPort] = "open"
+            results[protPort] = "open"
         }
     }
-    toString(toReturn)
-    return toReturn
+    
+    return results
+}
+
+// Remplacez votre fonction scan existante par cette nouvelle version
+func scan(ip string, ports []int, timeout int, grab bool) map[string]string {
+    return parallelScan(ip, ports, timeout, grab)
 }
 
 // Convertit une map en une chaîne lisible.
