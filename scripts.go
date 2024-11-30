@@ -346,6 +346,7 @@ func getServiceGrabber(port int) *ServiceGrabber {
 
 // Fonction de banner grabbing améliorée
 func advancedBannerGrab(conn net.Conn, port int) string {
+	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
     // Tentative avec un grabber spécifique
     grabber := getServiceGrabber(port)
     if grabber != nil {
@@ -361,7 +362,7 @@ func advancedBannerGrab(conn net.Conn, port int) string {
 
 // Méthode générique de banner grabbing
 func genericBannerGrab(conn net.Conn) string {
-    conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+    conn.SetReadDeadline(time.Now().Add(10 * time.Second))
     
     buf := make([]byte, 4096)
     n, err := conn.Read(buf)
