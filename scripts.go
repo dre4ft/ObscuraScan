@@ -1,11 +1,11 @@
 package main
 
 import (
-  //  "fmt"
+    "fmt"
     "net"
     "strings"
     "time"
-	//"encoding/binary"
+	"encoding/binary"
 )
 
 // Structure pour les scripts de banner grabbing spécifiques
