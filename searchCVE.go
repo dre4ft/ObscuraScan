@@ -3,18 +3,17 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
 )
 
-// Structure pour stocker les données de CVE
+// Structure to store CVE data matching the NVD API response
 type CVE struct {
-	CVEID       string `json:"cve.CVE_data_meta.CVE_ID"`
-	Description string `json:"cve.description.description_data.0.value"`
-	// Impact spécifique qui est un indicateur d'exploitabilité (Simplification)
-	ExploitabilityScore string `json:"impact.baseMetricV2.exploitabilityScore"`
+	CVEID       string `json:"id"`
+	Description string `json:"descriptions.0.value"`
+	ExploitabilityScore string `json:"metrics.cvssMetricV3.0.cvssData.baseScore"`
 }
 
 // Fonction pour extraire le nom du service et la version de la bannière
@@ -25,7 +24,6 @@ func ExtractProtocolAndVersion(banner string) (string, string) {
 	}
 
 	// Liste des expressions régulières
-	// Chercher des formats comme "Nom/Version", "Nom Version"
 	re1 := regexp.MustCompile(`(?P<Protocol>[a-zA-Z\-]+)[/\s](?P<Version>[0-9\.]+(?:[a-zA-Z\-0-9]+)?)`)
 	re2 := regexp.MustCompile(`(?P<Protocol>[a-zA-Z\-]+)[_/](?P<Version>[0-9\.]+(?:[a-zA-Z\-0-9]+)?)`)
 	re3 := regexp.MustCompile(`(?P<Protocol>[a-zA-Z\s\-]+)`)
@@ -54,10 +52,10 @@ func ExtractProtocolAndVersion(banner string) (string, string) {
 
 // Recherche des CVEs en fonction du protocole et de la version
 func SearchCVE(application, version string) []CVE {
-	// Construire l'URL de recherche pour l'API NIST avec l'application et la version
-	url := fmt.Sprintf("https://api.nvd.nist.gov/vuln/search?keyword=%s %s&resultsPerPage=5", application, version)
+	// Construire l'URL de recherche pour l'API NVD avec l'application et la version
+	url := fmt.Sprintf("https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch=%s+%s&resultsPerPage=5", application, version)
 
-	// Faire une requête HTTP GET vers l'API NIST
+	// Faire une requête HTTP GET vers l'API NVD
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Error fetching CVEs:", err)
@@ -66,14 +64,18 @@ func SearchCVE(application, version string) []CVE {
 	defer resp.Body.Close()
 
 	// Lire la réponse JSON
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
 		return nil
 	}
 
 	// Décoder la réponse JSON dans une structure Go
-	var result map[string]interface{}
+	var result struct {
+		Vulnerabilities []struct {
+			CVE CVE `json:"cve"`
+		} `json:"vulnerabilities"`
+	}
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)
@@ -82,27 +84,8 @@ func SearchCVE(application, version string) []CVE {
 
 	// Extraire les CVEs
 	cves := []CVE{}
-	if data, exists := result["result"]; exists {
-		if cveItems, exists := data.(map[string]interface{})["CVE_Items"]; exists {
-			cveList := cveItems.([]interface{})
-			for _, item := range cveList {
-				cveData := item.(map[string]interface{})
-				cveID := cveData["cve"].(map[string]interface{})["CVE_data_meta"].(map[string]interface{})["CVE_ID"].(string)
-				description := cveData["cve"].(map[string]interface{})["description"].(map[string]interface{})["description_data"].([]interface{})[0].(map[string]interface{})["value"].(string)
-
-				// On ne prend que les CVEs avec un exploitabilityScore
-				var exploitabilityScore string
-				if exploitability, exists := cveData["impact"].(map[string]interface{})["baseMetricV2"].(map[string]interface{})["exploitabilityScore"]; exists {
-					exploitabilityScore = fmt.Sprintf("%v", exploitability)
-				}
-
-				cves = append(cves, CVE{
-					CVEID:       cveID,
-					Description: description,
-					ExploitabilityScore: exploitabilityScore,
-				})
-			}
-		}
+	for _, vuln := range result.Vulnerabilities {
+		cves = append(cves, vuln.CVE)
 	}
 
 	// Retourner la liste des CVEs trouvés
