@@ -47,7 +47,7 @@ func main() {
 	}
 
 	if is_singleHost{
-		scan(singleHost, portRange, *timeout,*grab )
+		toString(scan(singleHost, portRange, *timeout,*grab ))
 	} else {
 		scanIPRange(multiHost, portRange,*timeout,*grab )
 	}
