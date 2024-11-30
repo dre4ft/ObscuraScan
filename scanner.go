@@ -22,7 +22,7 @@ type ScanResult struct {
     Banner  string
 }
 
-func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]string {
+/*func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]string {
     results := make(map[string]string)
     resultsChan := make(chan ScanResult, len(ports))
     errChan := make(chan error, 1)
@@ -87,12 +87,31 @@ func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]str
         mu.Unlock()
     }
     return results
-}
+}*/
 
 
-// Remplacez votre fonction scan existante par cette nouvelle version
 func scan(ip string, ports []int, timeout int, grab bool) map[string]string {
-    return parallelScan(ip, ports, timeout, grab)
+    toReturn := make(map[string]string)
+    
+    for _, port := range ports {
+        address := fmt.Sprintf("%s:%d", ip, port)
+        conn, err := net.DialTimeout("tcp", address, time.Duration(timeout)*time.Second)
+        if err != nil {
+            continue // Port fermé ou non accessible
+        }
+        defer conn.Close()
+
+        protPort := fmt.Sprintf("%d/tcp", port)
+        
+        if grab {
+            banner := grabBanner(conn, port)
+            toReturn[protPort] = fmt.Sprintf("open\n%s", banner)
+        } else {
+            toReturn[protPort] = "open"
+        }
+    }
+    
+    return toReturn
 }
 
 // Convertit une map en une chaîne lisible.
