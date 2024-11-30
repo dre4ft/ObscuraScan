@@ -34,22 +34,27 @@ func scan (ip string,ports []int, timeout int , grab bool) map[string]string {
 			}
 
 			// Définir un délai de lecture
-			conn.SetReadDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
+			conn.SetReadDeadline(time.Now().Add(30 * time.Second))
 
 			// Utiliser un buffer pour lire la réponse
 			reader := bufio.NewReader(conn)
 			var banner string
-			var hasAnErr = false 
+			buf := make([]byte, 1024)
 			for {
-				line, err := reader.ReadString('\n')
-				banner += line
+				n, err := conn.Read(buf)
+				if n > 0 {
+					banner += string(buf[:n])
+				}
 				if err != nil {
-					hasAnErr = true 
+					if err == io.EOF {
+						break
+					}
+					banner = ""
 					break
 				}
 			}
 
-			if !hasAnErr {
+			if banner != "" {
 				toReturn[protPort] = fmt.Sprintf("open\n%s", banner)
 			} else {
 				toReturn[protPort] = "open\nPas de banner trouvé"
