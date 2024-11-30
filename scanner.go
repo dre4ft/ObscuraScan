@@ -105,6 +105,6 @@ func toString(input map[string]string) {
 func scanIPRange(ips []string , ports []int , timeout int,grab bool){
 	for _,ip := range ips {
 		fmt.Printf("%s : \n", ip)
-		scan(ip,ports,timeout,grab)
+		toString(scan(ip,ports,timeout,grab))
 	}
 }
