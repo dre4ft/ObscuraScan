@@ -138,19 +138,17 @@ func scan (ip string,ports []int, timeout int , grab bool) map[string]string {
 			// Utiliser un buffer pour lire la réponse
 			reader := bufio.NewReader(conn)
 			var banner string
-
+			var hasAnErr = false 
 			for {
 				line, err := reader.ReadString('\n')
 				banner += line
 				if err != nil {
-					if err.Error() != "EOF" {
-						banner = ""
-					}
+					hasAnErr = true 
 					break
 				}
 			}
 
-			if banner != "" {
+			if !hasAnErr {
 				toReturn[protPort] = fmt.Sprintf("open\n%s", banner)
 			} else {
 				toReturn[protPort] = "open\nPas de banner trouvé"
@@ -167,7 +165,7 @@ func scan (ip string,ports []int, timeout int , grab bool) map[string]string {
 // Convertit une map en une chaîne lisible.
 func toString(input map[string]string) {
 	for key, value := range input {
-		fmt.Printf("%s : %s ", key,value )
+		fmt.Printf("%s : %s \n", key,value )
 	}
 }
 

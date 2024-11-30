@@ -11,6 +11,7 @@ func main() {
 	host := flag.String("host", "127.0.0.1", "The target host to scan")
 	ports := flag.String("ports", "20-1000", "list of ports to scan ex : 80,443 or 0-100")
 	timeout := flag.Int("timeout", 5, "Timeout in seconds for the connection")
+	grab := flag.Bool("grab",false,"grab the banner for each open port")
 	flag.Parse()
 
 	portRange, err := parsePorts(*ports)
@@ -45,7 +46,8 @@ func main() {
 		return
 	}
 
-	if is_singleHost{
+	if is_singleHos
+	t{
 		scan(singleHost, portRange, *timeout,true )
 	} else {
 		scanIPRange(multiHost, portRange,*timeout,true )
