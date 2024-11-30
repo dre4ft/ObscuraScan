@@ -5,7 +5,7 @@ import (
     "net"
     "strings"
     "time"
-	"binary"
+	"encoding/binary"
 )
 
 // Structure pour les scripts de banner grabbing spécifiques
