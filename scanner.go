@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"time"
+	"io"
 )
 
 
@@ -37,7 +38,6 @@ func scan (ip string,ports []int, timeout int , grab bool) map[string]string {
 			conn.SetReadDeadline(time.Now().Add(30 * time.Second))
 
 			// Utiliser un buffer pour lire la réponse
-			reader := bufio.NewReader(conn)
 			var banner string
 			buf := make([]byte, 1024)
 			for {
