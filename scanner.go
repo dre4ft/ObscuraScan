@@ -107,14 +107,15 @@ func scanAndGrab(ip string, portRange []int, timeout int) {
 
 
 
-func scan(ports []int, ip string, timeout time.Duration, grab bool) map[string]string {
+func scan (ip string,ports []int, timeout int , grab bool) map[string]string {
+	
 	toReturn := make(map[string]string)
 
 	for _, port := range ports {
 		isUp := false
 		address := fmt.Sprintf("%s:%d", ip, port)
 
-		conn, err := net.DialTimeout("tcp", address, timeout)
+		conn, err := net.DialTimeout("tcp", address, time.Duration(timeout) * time.Second)
 		if err != nil {
 			continue // Si la connexion échoue, passer au port suivant
 		} else {
