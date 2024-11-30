@@ -100,7 +100,8 @@ func scan(ip string, ports []int, timeout int, grab bool) map[string]string {
 // Convertit une map en une chaîne lisible.
 func toString(input map[string]string) {
 	for key, value := range input {
-		fmt.Printf("%s : %s \n", key,value )
+		cve := SearchAndFormat(value)
+		fmt.Printf("%s : %s \n", key,cve)
 	}
 }
 
