@@ -11,8 +11,8 @@ import (
 
 // Structure pour stocker les données de CVE
 type CVE struct {
-	CVEID       string `json:"CVE_data_meta.CVE_ID"`
-	Description string `json:"description.description_data"`
+	CVEID       string `json:"cve.CVE_data_meta.CVE_ID"`
+	Description string `json:"cve.description.description_data.0.value"`
 	// Impact spécifique qui est un indicateur d'exploitabilité (Simplification)
 	ExploitabilityScore string `json:"impact.baseMetricV2.exploitabilityScore"`
 }
@@ -55,7 +55,7 @@ func ExtractProtocolAndVersion(banner string) (string, string) {
 // Recherche des CVEs en fonction du protocole et de la version
 func SearchCVE(application, version string) []CVE {
 	// Construire l'URL de recherche pour l'API NIST avec l'application et la version
-	url := fmt.Sprintf("https://services.nist.gov/rest/v2/cve/?keyword=%s %s", application, version)
+	url := fmt.Sprintf("https://api.nvd.nist.gov/vuln/search?keyword=%s %s&resultsPerPage=5", application, version)
 
 	// Faire une requête HTTP GET vers l'API NIST
 	resp, err := http.Get(url)
@@ -121,7 +121,7 @@ func IsExploitable(cve CVE) string {
 // Formater les résultats des CVEs pour un protocole/application donné
 func FormatCVEResults(application, version string, cves []CVE) string {
 	// Commencer à formater la chaîne avec le nom du protocole et de la version
-	result := fmt.Sprintf("%s : %s :\n", application, version)
+	result := fmt.Sprintf("%s/%s :\n", application, version)
 
 	// Ajouter chaque CVE à la chaîne avec son état d'exploitabilité
 	for _, cve := range cves {
