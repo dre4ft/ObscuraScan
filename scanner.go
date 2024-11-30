@@ -133,7 +133,7 @@ func scan (ip string,ports []int, timeout int , grab bool) map[string]string {
 			}
 
 			// Définir un délai de lecture
-			conn.SetReadDeadline(time.Now().Add(timeout))
+			conn.SetReadDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
 
 			// Utiliser un buffer pour lire la réponse
 			reader := bufio.NewReader(conn)
@@ -165,7 +165,7 @@ func scan (ip string,ports []int, timeout int , grab bool) map[string]string {
 }
 
 // Convertit une map en une chaîne lisible.
-func toString(input map[int]bool) {
+func toString(input map[string]string) {
 	for key, value := range input {
 		fmt.Printf("%s : %s ", key,value )
 	}
