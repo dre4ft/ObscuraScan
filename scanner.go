@@ -23,42 +23,31 @@ type ScanResult struct {
 }
 
 func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]string {
-    // Utilisation de canaux avec buffer
     results := make(map[string]string)
     resultsChan := make(chan ScanResult, len(ports))
-    
-    // Canal d'erreur et de synchronisation
     errChan := make(chan error, 1)
-    
-    // WaitGroup pour gérer les goroutines
     var wg sync.WaitGroup
-    
-    // Mutex pour sécuriser l'accès aux résultats
     var mu sync.Mutex
-    
-    // Limiter le nombre de goroutines simultanées
     semaphore := make(chan struct{}, 100)
 
-    // Contexte avec timeout global
     ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
     defer cancel()
 
-    // Scanner chaque port en parallèle
+    sentPorts := make(map[int]bool)
+
     for _, port := range ports {
         wg.Add(1)
-        semaphore <- struct{}{} // Acquérir un slot
-        
+        semaphore <- struct{}{}
+
         go func(port int) {
             defer wg.Done()
-            defer func() { <-semaphore }() // Libérer le slot
-
-            // Utilisation du contexte pour le timeout
+            defer func() { <-semaphore }()
             conn, err := (&net.Dialer{
                 Timeout: time.Duration(timeout) * time.Second,
             }).DialContext(ctx, "tcp", fmt.Sprintf("%s:%d", ip, port))
             
             if err != nil {
-                return // Port fermé ou non accessible
+                return
             }
             defer conn.Close()
 
@@ -67,13 +56,9 @@ func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]str
                 State:  "open",
                 Banner: "",
             }
-            
-            // Si grab est activé, tenter de récupérer la bannière
             if grab {
                 result.Banner = grabBanner(conn, port)
             }
-            
-            // Envoyer le résultat au canal
             select {
             case resultsChan <- result:
             case <-ctx.Done():
@@ -81,28 +66,29 @@ func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]str
             }
         }(port)
     }
-    
-    // Goroutine pour fermer les canaux
+
     go func() {
         wg.Wait()
         close(resultsChan)
         close(errChan)
     }()
 
-    // Collecter les résultats
     for result := range resultsChan {
         mu.Lock()
-        protPort := fmt.Sprintf("%d/tcp", result.Port)
-        if result.Banner != "" {
-            results[protPort] = fmt.Sprintf("open\n%s", result.Banner)
-        } else {
-            results[protPort] = "open"
+        if !sentPorts[result.Port] {
+            protPort := fmt.Sprintf("%d/tcp", result.Port)
+            if result.Banner != "" {
+                results[protPort] = fmt.Sprintf("open\n%s", result.Banner)
+            } else {
+                results[protPort] = "open"
+            }
+            sentPorts[result.Port] = true
         }
         mu.Unlock()
     }
-    toString(results)
     return results
 }
+
 
 // Remplacez votre fonction scan existante par cette nouvelle version
 func scan(ip string, ports []int, timeout int, grab bool) map[string]string {
