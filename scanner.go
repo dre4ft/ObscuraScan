@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"net"
-	"time"
-	 "sync"
-	//"strings"     
-   // "regexp"
+	"context"
+    "fmt"
+    "net"
+    "sync"
+    "time"
 )
 
 
@@ -24,18 +23,26 @@ type ScanResult struct {
 }
 
 func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]string {
-    // Canal pour stocker les résultats
+    // Utilisation de canaux avec buffer
     results := make(map[string]string)
-    
-    // Canal pour synchroniser les résultats
     resultsChan := make(chan ScanResult, len(ports))
     
-    // WaitGroup pour attendre la fin de tous les scans
+    // Canal d'erreur et de synchronisation
+    errChan := make(chan error, 1)
+    
+    // WaitGroup pour gérer les goroutines
     var wg sync.WaitGroup
     
-    // Limiter le nombre de goroutines simultanées
-    semaphore := make(chan struct{}, 100) // Limite à 100 connexions simultanées
+    // Mutex pour sécuriser l'accès aux résultats
+    var mu sync.Mutex
     
+    // Limiter le nombre de goroutines simultanées
+    semaphore := make(chan struct{}, 100)
+
+    // Contexte avec timeout global
+    ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+    defer cancel()
+
     // Scanner chaque port en parallèle
     for _, port := range ports {
         wg.Add(1)
@@ -44,9 +51,12 @@ func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]str
         go func(port int) {
             defer wg.Done()
             defer func() { <-semaphore }() // Libérer le slot
+
+            // Utilisation du contexte pour le timeout
+            conn, err := (&net.Dialer{
+                Timeout: time.Duration(timeout) * time.Second,
+            }).DialContext(ctx, "tcp", fmt.Sprintf("%s:%d", ip, port))
             
-            address := fmt.Sprintf("%s:%d", ip, port)
-            conn, err := net.DialTimeout("tcp", address, time.Duration(timeout)*time.Second)
             if err != nil {
                 return // Port fermé ou non accessible
             }
@@ -64,24 +74,31 @@ func parallelScan(ip string, ports []int, timeout int, grab bool) map[string]str
             }
             
             // Envoyer le résultat au canal
-            resultsChan <- result
+            select {
+            case resultsChan <- result:
+            case <-ctx.Done():
+                return
+            }
         }(port)
     }
     
-    // Goroutine pour fermer le canal une fois tous les scans terminés
+    // Goroutine pour fermer les canaux
     go func() {
         wg.Wait()
         close(resultsChan)
+        close(errChan)
     }()
-    
+
     // Collecter les résultats
     for result := range resultsChan {
+        mu.Lock()
         protPort := fmt.Sprintf("%d/tcp", result.Port)
         if result.Banner != "" {
             results[protPort] = fmt.Sprintf("open\n%s", result.Banner)
         } else {
             results[protPort] = "open"
         }
+        mu.Unlock()
     }
     
     return results
