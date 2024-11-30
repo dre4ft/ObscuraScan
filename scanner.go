@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-
+/*
 // Vérifie quels ports sont ouverts.
 func whosup(ip string, portRange []int, timeout int) map[int]bool {
 	toReturn := make(map[int]bool)
@@ -103,22 +103,76 @@ func scanAndGrab(ip string, portRange []int, timeout int) {
 	} else{
 		fmt.Printf("no open port")
 	}
+}*/
+
+
+
+func scan(ports []int, ip string, timeout time.Duration, grab bool) map[string]string {
+	toReturn := make(map[string]string)
+
+	for _, port := range ports {
+		isUp := false
+		address := fmt.Sprintf("%s:%d", ip, port)
+
+		conn, err := net.DialTimeout("tcp", address, timeout)
+		if err != nil {
+			continue // Si la connexion échoue, passer au port suivant
+		} else {
+			isUp = true
+		}
+
+		// Assurez-vous de fermer la connexion après l'utilisation
+		defer conn.Close()
+
+		protPort := fmt.Sprintf("tcp, %d", port)
+		if grab && isUp {
+			// Pour le port 80 (HTTP), envoyer une requête GET
+			if port == 80 {
+				fmt.Fprintf(conn, "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", ip)
+			}
+
+			// Définir un délai de lecture
+			conn.SetReadDeadline(time.Now().Add(timeout))
+
+			// Utiliser un buffer pour lire la réponse
+			reader := bufio.NewReader(conn)
+			var banner string
+
+			for {
+				line, err := reader.ReadString('\n')
+				banner += line
+				if err != nil {
+					if err.Error() != "EOF" {
+						banner = ""
+					}
+					break
+				}
+			}
+
+			if banner != "" {
+				toReturn[protPort] = fmt.Sprintf("open\n%s", banner)
+			} else {
+				toReturn[protPort] = "open\nPas de banner trouvé"
+			}
+		} else if isUp {
+			toReturn[protPort] = "open"
+		}
+	}
+
+	toString(toReturn)
+	return toReturn
 }
 
 // Convertit une map en une chaîne lisible.
 func toString(input map[int]bool) {
 	for key, value := range input {
-		if value {
-			fmt.Printf("%d : open\n", key)
-		} else {
-			fmt.Printf("%d : closed\n", key)
-		}
+		fmt.Printf("%s : %s ", key,value )
 	}
 }
 
-func scanIPRange(ips []string , ports []int , timeout int){
+func scanIPRange(ips []string , ports []int , timeout int,grab bool){
 	for _,ip := range ips {
 		fmt.Printf("%s : \n", ip)
-		scanAndGrab(ip,ports,timeout)
+		scan(ip,ports,timeout,grab)
 	}
 }
