@@ -143,7 +143,7 @@ var serviceGrabbers = []ServiceGrabber{
             return "MySQL server (generic banner)"
         },
     },
-	/*{
+	{
         Port:     88,   // Kerberos
         Protocol: "kerberos",
         Grabber: func(conn net.Conn) string {
@@ -163,7 +163,7 @@ var serviceGrabbers = []ServiceGrabber{
             }
             return "Kerberos server (no response)"
         },
-    },*/
+    },
     {
         Port:     135,  // Microsoft RPC
         Protocol: "msrpc",
