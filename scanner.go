@@ -102,7 +102,8 @@ func toString(input map[string]string) {
 	for key, value := range input {
 		cve := SearchAndFormat(value)
 		fmt.Printf("%s : %s \n", key,value)
-		fmt.Printf("Vulnerability scan : \n %s \n",cve)
+		fmt.Printf("Vulnerability scan : \n %s",cve)
+		fmt.Printf("-------------------------------")
 	}
 }
 
