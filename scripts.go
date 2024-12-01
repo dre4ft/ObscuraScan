@@ -7,15 +7,14 @@ import (
     "time"
 	"encoding/binary"
 )
-
-// Structure pour les scripts de banner grabbing spécifiques
+ 
 type ServiceGrabber struct {
     Port     int
     Protocol string
     Grabber  func(net.Conn) string
 }
 
-// Liste des scripts de banner grabbing pour ports bien connus
+ 
 var serviceGrabbers = []ServiceGrabber{
     {
         Port:     21,   // FTP
@@ -147,13 +146,13 @@ var serviceGrabbers = []ServiceGrabber{
         Port:     88,   // Kerberos
         Protocol: "kerberos",
         Grabber: func(conn net.Conn) string {
-            // Tentative de récupération d'informations Kerberos
+ 
             buf := make([]byte, 1024)
             n, err := conn.Read(buf)
             if err == nil && n > 0 {
-                // Analyse basique du protocole Kerberos
+    
                 if len(buf) >= 4 {
-                    // Vérification des premiers octets typiques de Kerberos
+           
                     length := binary.BigEndian.Uint32(buf[:4])
                     if length > 0 && length < 1024 {
                         return fmt.Sprintf("Kerberos server (packet length: %d)", length)
@@ -168,11 +167,11 @@ var serviceGrabbers = []ServiceGrabber{
         Port:     135,  // Microsoft RPC
         Protocol: "msrpc",
         Grabber: func(conn net.Conn) string {
-            // Tentative de récupération d'informations RPC
+    
             buf := make([]byte, 1024)
             n, err := conn.Read(buf)
             if err == nil && n > 0 {
-                // Analyse des données RPC
+   
                 if len(buf) >= 5 && buf[0] == 0x05 && buf[1] == 0x00 {
                     return "Microsoft RPC Endpoint Mapper"
                 }
@@ -185,11 +184,11 @@ var serviceGrabbers = []ServiceGrabber{
         Port:     139,  // NetBIOS
         Protocol: "netbios",
         Grabber: func(conn net.Conn) string {
-            // Tentative de récupération d'informations NetBIOS
+         
             buf := make([]byte, 1024)
             n, err := conn.Read(buf)
             if err == nil && n > 0 {
-                // Analyse des données NetBIOS
+          
                 if len(buf) > 4 && buf[0] == 0xff && buf[1] == 0x53 {
                     return "NetBIOS Name Service"
                 }
@@ -202,7 +201,7 @@ var serviceGrabbers = []ServiceGrabber{
         Port:     389,  // LDAP
         Protocol: "ldap",
         Grabber: func(conn net.Conn) string {
-            // Tentative de récupération d'informations LDAP
+         
             buf := make([]byte, 1024)
             n, err := conn.Read(buf)
             if err == nil && n > 0 {
@@ -219,8 +218,7 @@ var serviceGrabbers = []ServiceGrabber{
         Port:     445,  // SMB
         Protocol: "smb",
         Grabber: func(conn net.Conn) string {
-            // Tentative de récupération d'informations SMB
-            // Envoi d'un paquet SMB minimal
+          
             smbNegociate := []byte{
                 0x00, 0x00, 0x00, 0x54, // Longueur du paquet
                 0xff, 0x53, 0x4d, 0x42, // Signature SMB
@@ -238,7 +236,7 @@ var serviceGrabbers = []ServiceGrabber{
             buf := make([]byte, 1024)
             n, err := conn.Read(buf)
             if err == nil && n > 0 {
-                // Vérification de la signature SMB
+                
                 if len(buf) >= 4 && buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0x00 && buf[3] == 0x54 {
                     return "Microsoft SMB service"
                 }
@@ -251,7 +249,7 @@ var serviceGrabbers = []ServiceGrabber{
         Port:     1433, // Microsoft SQL Server
         Protocol: "mssql",
         Grabber: func(conn net.Conn) string {
-            // Tentative de préparation d'une préconnexion SQL Server
+           
             preLoginPacket := []byte{
                 0x12, 0x01, 0x00, 0x34, 0x00, 0x00, 0x00, 
                 0x00, 0x00, 0x00, 0x15, 0x00, 0x06, 0x01, 
@@ -269,7 +267,7 @@ var serviceGrabbers = []ServiceGrabber{
             buf := make([]byte, 1024)
             n, err := conn.Read(buf)
             if err == nil && n > 0 {
-                // Vérification de la réponse SQL Server
+                
                 if len(buf) >= 5 && buf[0] == 0x04 && buf[1] == 0x01 {
                     return "Microsoft SQL Server"
                 }
@@ -282,7 +280,7 @@ var serviceGrabbers = []ServiceGrabber{
         Port:     5432, // PostgreSQL
         Protocol: "postgresql",
         Grabber: func(conn net.Conn) string {
-            // Paquet de négociation PostgreSQL
+           
             postgresPacket := []byte{
                 0x00, 0x00, 0x00, 0x4f, // Longueur
                 0x00, 0x03, 0x00, 0x00, // Version du protocole
@@ -301,7 +299,7 @@ var serviceGrabbers = []ServiceGrabber{
             buf := make([]byte, 1024)
             n, err := conn.Read(buf)
             if err == nil && n > 0 {
-                // Vérification de la réponse PostgreSQL
+                
                 if len(buf) >= 1 && (buf[0] == 'R' || buf[0] == 'E') {
                     return "PostgreSQL database server"
                 }
@@ -312,7 +310,6 @@ var serviceGrabbers = []ServiceGrabber{
     },
 }
 
-// Fonction utilitaire pour extraire la version SSH
 func extractSSHVersion(banner string) string {
     lines := strings.Split(banner, "\n")
     for _, line := range lines {
@@ -323,7 +320,7 @@ func extractSSHVersion(banner string) string {
     return "SSH server (version not found)"
 }
 
-// Fonction utilitaire pour extraire l'en-tête du serveur HTTP
+ 
 func extractHTTPServerHeader(response string) string {
     lines := strings.Split(response, "\n")
     for _, line := range lines {
@@ -334,7 +331,7 @@ func extractHTTPServerHeader(response string) string {
     return "HTTP server (no server header)"
 }
 
-// Fonction pour obtenir le grabber spécifique à un port
+ 
 func getServiceGrabber(port int) *ServiceGrabber {
     for _, sg := range serviceGrabbers {
         if sg.Port == port {
@@ -344,10 +341,10 @@ func getServiceGrabber(port int) *ServiceGrabber {
     return nil
 }
 
-// Fonction de banner grabbing améliorée
+ 
 func advancedBannerGrab(conn net.Conn, port int) string {
 	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
-    // Tentative avec un grabber spécifique
+  
     grabber := getServiceGrabber(port)
     if grabber != nil {
         banner := grabber.Grabber(conn)
@@ -355,12 +352,11 @@ func advancedBannerGrab(conn net.Conn, port int) string {
             return banner
         }
     }
-    
-    // Fallback sur une méthode générique si aucun grabber spécifique n'est trouvé
+ 
     return genericBannerGrab(conn)
 }
 
-// Méthode générique de banner grabbing
+ 
 func genericBannerGrab(conn net.Conn) string {
     conn.SetReadDeadline(time.Now().Add(10 * time.Second))
     
@@ -368,8 +364,7 @@ func genericBannerGrab(conn net.Conn) string {
     n, err := conn.Read(buf)
     if err == nil && n > 0 {
         banner := string(buf[:n])
-        
-        // Nettoyage basique
+      
         banner = strings.TrimSpace(banner)
         
         if banner != "" {
