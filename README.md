@@ -1,16 +1,17 @@
 # ObscuraScan (OBScan)
 
-ObscuraScan (or **OBScan** for short) is a fast, lightweight port scanner designed for network reconnaissance and service discovery. OBScan not only scans open ports on a target host but also retrieves service banners, unveiling the secrets of the network.
-
-Whether you're a security professional, developer, or just exploring the unknown, OBScan is your go-to tool for uncovering what lies behind the veil of the network.
+ObscuraScan (**OBScan**) is a fast, lightweight network reconnaissance tool designed for port scanning and service identification. With added flexibility for handling hostnames, banner grabbing, and customizable protocols, OBScan is a powerful tool for security professionals, developers, or anyone exploring the depths of a network.
 
 ---
 
 ## ✨ Features
-- **Fast and concurrent scanning**: Harness the power of Go's goroutines to scan multiple ports simultaneously.  
-- **Banner grabbing**: Peek behind open ports and identify running services.  
-- **Customizable scanning**: Define port ranges and timeout values to suit your reconnaissance needs.  
-- **Portable binary**: Cross-platform compatibility with no external dependencies.  
+- **Protocol support**: Choose between TCP or other supported protocols for scanning.  
+- **Hostname and IP scanning**: Seamlessly scan using IP addresses or domain names with automatic DNS resolution.  
+- **Port range customization**: Specify single ports, multiple ports, or ranges (e.g., `80`, `20-100`).  
+- **Banner grabbing**: Identify running services behind open ports.
+- **Vulnerability Detection**: Identify known vulnerabilities base on the banner we grab ( using the NIST api ) 
+- **Timeout settings**: Adjust connection timeouts to suit your needs.  
+- **Multi-host scanning**: Scan multiple resolved IPs for a single hostname.  
 
 ---
 
@@ -34,34 +35,44 @@ Whether you're a security professional, developer, or just exploring the unknown
 Run OBScan with the following options:
 
 ```bash
-./obscan -host <target-host> -ports <port-range> [-timeout <timeout>]
+./obscan -type <protocol> -ip <target-host> -p <port-range> [-t <timeout>] [-g]
 ```
 
 ### Example
-Scan ports 1-100 on `192.168.1.1`:
+#### Scan ports 20-80 on `192.168.1.1` with TCP:
 ```bash
-./obscan -host 192.168.1.1 -ports 1-100
+./obscan -type tcp -ip 192.168.1.1 -p 20-80
+```
+
+#### Scan a hostname, resolve IPs, and grab banners:
+```bash
+./obscan -type tcp -ip example.com -p 443 -g
 ```
 
 ### Options
-- `-host`: Target host (IP address or domain name).  
-- `-ports`: Port range to scan (e.g., `1-1000`).  
-- `-timeout`: Timeout for connections in seconds (default: 5 seconds).  
+- `-type`: Protocol to use for scanning (default: `tcp`).  
+- `-ip`: Target host (IP address or domain name).  
+- `-p`: Port or range of ports to scan (e.g., `80,443` or `20-100`).  
+- `-t`: Timeout for connections in seconds (default: `5`).  
+- `-g`: Enable banner grabbing for open ports.
 
 ---
 
 ## 🌌 Roadmap
 - [x] Basic TCP port scanning.  
-- [x] Concurrent scanning with goroutines.  
-- [x] Banner grabbing for open ports.  
+- [x] Hostname resolution to IP addresses.  
+- [x] Banner grabbing for open ports.
+- [ ] handle UDP scanning
+- [ ] enhance vulnerability detection   
 - [ ] Export scan results to JSON or CSV.  
-- [ ] Advanced service detection based on banners.  
-- [ ] Add optional stealth mode with random delays.  
+- [ ] Protocol-based scan optimization.  
+- [ ] Enhanced output formatting.  
+- [ ] IPv6 support.
 
 ---
 
 ## 📜 Contribution
-We welcome contributions from fellow explorers! Feel free to submit issues, suggest new features, or open pull requests to improve ObscuraScan.
+We welcome contributions! Submit issues, suggest new features, or open pull requests to make ObscuraScan even better.
 
 ---
 
@@ -71,4 +82,4 @@ ObscuraScan is licensed under the MIT License. See the [LICENSE](LICENSE) file f
 ---
 
 ## 🌟 Disclaimer
-ObscuraScan is intended for educational and ethical purposes only. Unauthorized use on networks without explicit permission is prohibited.
+ObscuraScan is intended for ethical and educational purposes only. Unauthorized use on networks without explicit permission is strictly prohibited.
